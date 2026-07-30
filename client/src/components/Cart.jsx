@@ -15,25 +15,7 @@ export default function Cart({ cart, onIncrease, onDecrease, onRemove }) {
     );
   }
   
-  const handleCheckout = async () => {
-  try {
-    const response = await fetch('http://localhost:5000/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cart, totalPrice })
-    });
-
-    if (response.ok) {
-      toast.success('Order placed successfully! 🎉');
-      // Clear cart logic here (e.g., clearing state and localStorage)
-    } else {
-      toast.error('Checkout failed. Please try again.');
-    }
-  } catch (error) {
-    console.error('Checkout error:', error);
-    toast.error('Network error during checkout.');
-  }
-};
+ 
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
@@ -77,9 +59,19 @@ export default function Cart({ cart, onIncrease, onDecrease, onRemove }) {
 
       <div style={{ marginTop: '30px', textAlign: 'left', borderTop: '2px solid #eee', paddingTop: '20px' }}>
         <h3>Total: ₪{totalPrice}</h3>
-        <button className="btn-primary" style={{ marginTop: '10px', padding: '12px 30px', fontSize: '1.1rem' }}>
-          Proceed to Checkout
-        </button>
+       <Link
+  to="/checkout"
+  className="btn-primary"
+  style={{
+    display: 'inline-block',
+    marginTop: '10px',
+    padding: '12px 30px',
+    fontSize: '1.1rem',
+    textDecoration: 'none'
+  }}
+>
+  Proceed to Checkout
+</Link>
       </div>
     </div>
   );
