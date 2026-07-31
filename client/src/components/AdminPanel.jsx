@@ -33,7 +33,9 @@ const getAuthHeaders = (
   return headers;
 };
 
-export default function AdminPanel() {
+export default function AdminPanel({
+  onProductsChanged
+}) {
   const [activeTab, setActiveTab] =
     useState('orders');
 
@@ -57,6 +59,15 @@ export default function AdminPanel() {
 
   const [orderItems, setOrderItems] =
     useState([]);
+const [
+  selectedImage,
+  setSelectedImage
+] = useState(null);
+
+const [
+  isUploadingImage,
+  setIsUploadingImage
+] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -182,6 +193,7 @@ export default function AdminPanel() {
 
       setForm(emptyProductForm);
       await fetchData();
+      await onProductsChanged?.();
     } catch (error) {
       console.error(
         'Error adding product:',
@@ -230,7 +242,7 @@ export default function AdminPanel() {
             Number(productId)
         )
       );
-
+      await onProductsChanged?.();
       toast.success(
         'Product deleted successfully!',
         {
@@ -286,7 +298,7 @@ export default function AdminPanel() {
 
       setForm(emptyProductForm);
       setEditingProductId(null);
-
+      await onProductsChanged?.(); 
       toast.success(
         'Product updated successfully!',
         {
@@ -424,7 +436,7 @@ export default function AdminPanel() {
 
         setProducts(updatedProducts);
       }
-
+      await onProductsChanged?.();
       toast.success(
         'Order status updated',
         {
@@ -442,7 +454,69 @@ export default function AdminPanel() {
       });
     }
   };
+  
+const handleImageUpload = async () => {
+  if (!selectedImage) {
+    toast.error('Please select an image');
+    return;
+  }
 
+  const token = localStorage.getItem(
+    'baking_corner_token'
+  );
+
+  const uploadData = new FormData();
+
+  uploadData.append(
+    'image',
+    selectedImage
+  );
+
+  setIsUploadingImage(true);
+
+  try {
+    const response = await fetch(
+      'http://localhost:5000/api/uploads/product-image',
+      {
+        method: 'POST',
+        headers: {
+          Authorization:
+            `Bearer ${token}`
+        },
+        body: uploadData
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+        'Failed to upload image'
+      );
+    }
+
+    setForm((previousForm) => ({
+      ...previousForm,
+      image_url: data.imageUrl
+    }));
+
+    setSelectedImage(null);
+
+    toast.success(
+      'Image uploaded successfully'
+    );
+  } catch (error) {
+    console.error(
+      'Image upload error:',
+      error
+    );
+
+    toast.error(error.message);
+  } finally {
+    setIsUploadingImage(false);
+  }
+};
   return (
     <div
       style={{
@@ -995,7 +1069,39 @@ export default function AdminPanel() {
                 gridColumn: 'span 2'
               }}
             />
+<div
+  style={{
+    gridColumn: 'span 2',
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '10px',
+    alignItems: 'center'
+  }}
+>
+  <input
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    onChange={(event) =>
+      setSelectedImage(
+        event.target.files[0] || null
+      )
+    }
+  />
 
+  <button
+    type="button"
+    onClick={handleImageUpload}
+    disabled={
+      !selectedImage ||
+      isUploadingImage
+    }
+    className="btn-primary"
+  >
+    {isUploadingImage
+      ? 'Uploading...'
+      : 'Upload Image'}
+  </button>
+</div>
             <input
               type="text"
               placeholder="Description"

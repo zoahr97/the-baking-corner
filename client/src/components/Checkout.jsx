@@ -80,7 +80,7 @@ export default function Checkout({
 
           body: JSON.stringify({
             cart,
-            totalPrice,
+            
 
             /*
               Only customer, shipping and

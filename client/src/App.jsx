@@ -12,6 +12,7 @@ import Checkout from './components/Checkout';
 import AdminPanel from './components/AdminPanel';
 import Login from './components/Login';
 import Register from './components/Register';
+import MyOrders from './components/MyOrders';
 
 const getRemainingStock = (product, cart) => {
   const cartItem = cart.find(
@@ -185,7 +186,19 @@ function App() {
       JSON.stringify(cart)
     );
   }, [cart]);
+useEffect(() => {
+  const productPages = [
+    '/',
+    '/ingredients',
+    '/equipment'
+  ];
 
+  if (
+    productPages.includes(location.pathname)
+  ) {
+    loadProducts();
+  }
+}, [location.pathname]);
   const loadProducts = async () => {
     try {
       const response = await fetch(
@@ -543,6 +556,12 @@ function App() {
 
         {currentUser ? (
           <>
+          <Link
+             to="/my-orders"
+             style={navigationLinkStyle}
+          >
+           My Orders
+          </Link>
             <span
               style={{
                 color: 'var(--text-muted)',
@@ -649,12 +668,24 @@ function App() {
               : <Register />
           }
         />
+        <Route
+           path="/my-orders"
+           element={
+           currentUser
+            ?<MyOrders
+  onProductsChanged={loadProducts}
+/>
+            : <Navigate to="/login" />
+        }
+      />
 
         <Route
           path="/admin"
           element={
             currentUser?.role === 'admin'
-              ? <AdminPanel />
+              ? <AdminPanel
+  onProductsChanged={loadProducts}
+/>
               : <Navigate to="/login" />
           }
         />
