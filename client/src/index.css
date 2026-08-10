@@ -279,3 +279,43 @@ h1, h2, h3, .product-title {
 .dropdown:hover .dropdown-content {
   display: block;
 }
+
+/* =========================
+   Checkout Page
+   ========================= */
+
+.checkout-label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.checkout-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #d8d1ca;
+  background-color: #fff;
+  color: var(--text-main);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.checkout-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(193, 166, 141, 0.15);
+}
+
+
+@media (max-width: 750px) {
+  .checkout-layout {
+    grid-template-columns: 1fr;
+  }
+}
