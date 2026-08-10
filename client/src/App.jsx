@@ -7,12 +7,12 @@ import {
 } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
-import Cart from './components/Cart';
-import Checkout from './components/Checkout';
-import AdminPanel from './components/AdminPanel';
-import Login from './components/Login';
-import Register from './components/Register';
-import MyOrders from './components/MyOrders';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import AdminPanel from './pages/AdminPanel';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import MyOrders from './pages/MyOrders';
 
 const getRemainingStock = (product, cart) => {
   const cartItem = cart.find(

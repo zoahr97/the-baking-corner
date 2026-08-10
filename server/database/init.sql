@@ -27,6 +27,12 @@ CREATE TABLE orders (
     user_id INT NOT NULL,
     total_amount DECIMAL(10, 2) NOT NULL,
     status ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
+    customer_name VARCHAR(100),
+    customer_email VARCHAR(100),
+    customer_phone VARCHAR(20),
+    shipping_city VARCHAR(100),
+    shipping_address VARCHAR(255),
+    payment_method VARCHAR(50),
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

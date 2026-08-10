@@ -53,7 +53,7 @@ export default function MyOrders({
 
       try {
         const response = await fetch(
-          'http://localhost:5000/api/my-orders',
+          'http://localhost:5000/api/orders/my-orders',
           {
             headers: {
               Authorization:
@@ -110,7 +110,7 @@ export default function MyOrders({
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/my-orders/${orderId}/items`,
+        `http://localhost:5000/api/orders/my-orders/${orderId}/items`,
         {
           headers: {
             Authorization:
@@ -167,7 +167,7 @@ export default function MyOrders({
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/my-orders/${orderId}/cancel`,
+        `http://localhost:5000/api/orders/my-orders/${orderId}/cancel`,
         {
           method: 'PUT',
           headers: {
