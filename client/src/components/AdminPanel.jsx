@@ -246,6 +246,7 @@ export default function AdminPanel() {
 
                     {/* Products Table */}
                     <table style={tableStyle}>
+                        
                         <thead>
                             <tr style={{ background: '#f4f4f4' }}>
                                 <th style={thStyle}>ID</th>
