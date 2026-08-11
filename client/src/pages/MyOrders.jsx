@@ -1,46 +1,40 @@
-import {
-  useEffect,
-  useState
-} from 'react';
-import {
-  Link,
-  useNavigate
-} from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+
+const MY_ORDERS_API =
+  'http://localhost:5000/api/my-orders';
 
 export default function MyOrders({
   onProductsChanged
 }) {
   const navigate = useNavigate();
 
-  const [orders, setOrders] =
-    useState([]);
-
-  const [
-    selectedOrderId,
-    setSelectedOrderId
-  ] = useState(null);
-
-  const [orderItems, setOrderItems] =
-    useState([]);
-
-  const [isLoading, setIsLoading] =
-    useState(true);
-
-  const [
-    isLoadingItems,
-    setIsLoadingItems
-  ] = useState(false);
-
-  const [
-    cancellingOrderId,
-    setCancellingOrderId
-  ] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [selectedOrderId, setSelectedOrderId] =
+    useState(null);
+  const [orderItems, setOrderItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingItems, setIsLoadingItems] =
+    useState(false);
+  const [cancellingOrderId, setCancellingOrderId] =
+    useState(null);
 
   const getToken = () =>
-    localStorage.getItem(
-      'baking_corner_token'
-    );
+    localStorage.getItem('baking_corner_token');
+
+  const readJsonResponse = async (response) => {
+    const contentType =
+      response.headers.get('content-type') || '';
+
+    if (!contentType.includes('application/json')) {
+      throw new Error(
+        `The server returned an invalid response (${response.status})`
+      );
+    }
+
+    return response.json();
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -52,32 +46,23 @@ export default function MyOrders({
       }
 
       try {
-        const response = await fetch(
-          'http://localhost:5000/api/orders/my-orders',
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`
-            }
+        const response = await fetch(MY_ORDERS_API, {
+          headers: {
+            Authorization: `Bearer ${token}`
           }
-        );
+        });
 
-        const data =
-          await response.json();
+        const data = await readJsonResponse(response);
 
         if (!response.ok) {
           throw new Error(
-            data.error ||
-            'Failed to load orders'
+            data.error || 'Failed to load orders'
           );
         }
 
         setOrders(data);
       } catch (error) {
-        console.error(
-          'Error loading orders:',
-          error
-        );
+        console.error('Error loading orders:', error);
 
         toast.error(error.message, {
           id: 'my-orders-error'
@@ -90,9 +75,7 @@ export default function MyOrders({
     fetchOrders();
   }, [navigate]);
 
-  const handleViewDetails = async (
-    orderId
-  ) => {
+  const handleViewDetails = async (orderId) => {
     if (selectedOrderId === orderId) {
       setSelectedOrderId(null);
       setOrderItems([]);
@@ -110,22 +93,20 @@ export default function MyOrders({
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/orders/my-orders/${orderId}/items`,
+        `${MY_ORDERS_API}/${orderId}/items`,
         {
           headers: {
-            Authorization:
-              `Bearer ${token}`
+            Authorization: `Bearer ${token}`
           }
         }
       );
 
-      const data =
-        await response.json();
+      const data = await readJsonResponse(response);
 
       if (!response.ok) {
         throw new Error(
           data.error ||
-          'Failed to load order details'
+            'Failed to load order details'
         );
       }
 
@@ -145,9 +126,7 @@ export default function MyOrders({
     }
   };
 
-  const handleCancelOrder = async (
-    orderId
-  ) => {
+  const handleCancelOrder = async (orderId) => {
     const confirmed = window.confirm(
       'Are you sure you want to cancel this order?'
     );
@@ -167,30 +146,26 @@ export default function MyOrders({
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/orders/my-orders/${orderId}/cancel`,
+        `${MY_ORDERS_API}/${orderId}/cancel`,
         {
           method: 'PUT',
           headers: {
-            Authorization:
-              `Bearer ${token}`
+            Authorization: `Bearer ${token}`
           }
         }
       );
 
-      const data =
-        await response.json();
+      const data = await readJsonResponse(response);
 
       if (!response.ok) {
         throw new Error(
-          data.error ||
-          'Failed to cancel order'
+          data.error || 'Failed to cancel order'
         );
       }
 
       setOrders((previousOrders) =>
         previousOrders.map((order) =>
-          Number(order.id) ===
-          Number(orderId)
+          Number(order.id) === Number(orderId)
             ? {
                 ...order,
                 status: 'cancelled'
@@ -198,7 +173,9 @@ export default function MyOrders({
             : order
         )
       );
-await onProductsChanged?.();
+
+      await onProductsChanged?.();
+
       toast.success(
         'Order cancelled successfully',
         {
@@ -212,15 +189,14 @@ await onProductsChanged?.();
       );
 
       toast.error(error.message, {
-        id:
-          `cancel-order-error-${orderId}`
+        id: `cancel-order-error-${orderId}`
       });
     } finally {
       setCancellingOrderId(null);
     }
   };
 
-  const formatStatus = (status) =>
+  const formatStatus = (status = 'pending') =>
     status.charAt(0).toUpperCase() +
     status.slice(1);
 
@@ -292,8 +268,7 @@ await onProductsChanged?.();
               style={{
                 display: 'flex',
                 flexWrap: 'wrap',
-                justifyContent:
-                  'space-between',
+                justifyContent: 'space-between',
                 alignItems: 'center',
                 gap: '15px'
               }}
@@ -309,8 +284,7 @@ await onProductsChanged?.();
 
                 <span
                   style={{
-                    color:
-                      'var(--text-muted)'
+                    color: 'var(--text-muted)'
                   }}
                 >
                   {new Date(
@@ -352,22 +326,17 @@ await onProductsChanged?.();
             <div
               style={{
                 marginTop: '15px',
-                color:
-                  'var(--text-muted)'
+                color: 'var(--text-muted)'
               }}
             >
               <p>
-                <strong>
-                  Delivery:
-                </strong>{' '}
+                <strong>Delivery:</strong>{' '}
                 {order.shipping_address},{' '}
                 {order.shipping_city}
               </p>
 
               <p>
-                <strong>
-                  Payment:
-                </strong>{' '}
+                <strong>Payment:</strong>{' '}
                 {order.payment_method ===
                 'credit-card'
                   ? 'Credit Card'
@@ -386,38 +355,29 @@ await onProductsChanged?.();
                 type="button"
                 className="btn-primary"
                 onClick={() =>
-                  handleViewDetails(
-                    order.id
-                  )
+                  handleViewDetails(order.id)
                 }
                 disabled={isLoadingItems}
               >
-                {selectedOrderId ===
-                order.id
+                {selectedOrderId === order.id
                   ? 'Hide Details'
                   : 'View Details'}
               </button>
 
-              {order.status ===
-                'pending' && (
+              {order.status === 'pending' && (
                 <button
                   type="button"
                   onClick={() =>
-                    handleCancelOrder(
-                      order.id
-                    )
+                    handleCancelOrder(order.id)
                   }
                   disabled={
-                    cancellingOrderId ===
-                    order.id
+                    cancellingOrderId === order.id
                   }
                   style={{
-                    padding:
-                      '10px 20px',
+                    padding: '10px 20px',
                     border:
                       '1px solid #e74c3c',
-                    backgroundColor:
-                      '#fff',
+                    backgroundColor: '#fff',
                     color: '#e74c3c',
                     cursor:
                       cancellingOrderId ===
@@ -431,16 +391,14 @@ await onProductsChanged?.();
                         : 1
                   }}
                 >
-                  {cancellingOrderId ===
-                  order.id
+                  {cancellingOrderId === order.id
                     ? 'Cancelling...'
                     : 'Cancel Order'}
                 </button>
               )}
             </div>
 
-            {selectedOrderId ===
-              order.id && (
+            {selectedOrderId === order.id && (
               <div
                 style={{
                   marginTop: '20px',
@@ -451,45 +409,37 @@ await onProductsChanged?.();
               >
                 <h3>Products</h3>
 
-                {orderItems.length ===
-                0 ? (
+                {orderItems.length === 0 ? (
                   <p>
-                    No products found for
-                    this order.
+                    No products found for this order.
                   </p>
                 ) : (
-                  orderItems.map(
-                    (item) => (
-                      <div
-                        key={item.id}
-                        style={{
-                          display:
-                            'flex',
-                          justifyContent:
-                            'space-between',
-                          gap: '15px',
-                          padding:
-                            '10px 0',
-                          borderBottom:
-                            '1px solid var(--border-light)'
-                        }}
-                      >
-                        <span>
-                          {
-                            item.product_name
-                          }{' '}
-                          × {item.quantity}
-                        </span>
+                  orderItems.map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        display: 'flex',
+                        justifyContent:
+                          'space-between',
+                        gap: '15px',
+                        padding: '10px 0',
+                        borderBottom:
+                          '1px solid var(--border-light)'
+                      }}
+                    >
+                      <span>
+                        {item.product_name} ×{' '}
+                        {item.quantity}
+                      </span>
 
-                        <strong>
-                          ₪
-                          {Number(
-                            item.item_total
-                          ).toFixed(2)}
-                        </strong>
-                      </div>
-                    )
-                  )
+                      <strong>
+                        ₪
+                        {Number(
+                          item.item_total
+                        ).toFixed(2)}
+                      </strong>
+                    </div>
+                  ))
                 )}
               </div>
             )}
@@ -506,22 +456,18 @@ const statusStyle = (status) => {
       background: '#fff2cc',
       color: '#806000'
     },
-
     processing: {
       background: '#d9eaf7',
       color: '#1f4e79'
     },
-
     shipped: {
       background: '#e2f0d9',
       color: '#385723'
     },
-
     delivered: {
       background: '#d5f5e3',
       color: '#1e8449'
     },
-
     cancelled: {
       background: '#f8d7da',
       color: '#842029'
@@ -533,7 +479,6 @@ const statusStyle = (status) => {
     borderRadius: '14px',
     fontSize: '0.85rem',
     fontWeight: 'bold',
-    ...(colors[status] ||
-      colors.pending)
+    ...(colors[status] || colors.pending)
   };
 };
