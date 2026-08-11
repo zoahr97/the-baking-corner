@@ -1,11 +1,19 @@
-import { useEffect, useState } from 'react';
+import {
+  useEffect,
+  useState
+} from 'react';
+
 import {
   Routes,
   Route,
   Link,
-  Navigate
+  Navigate,
+  useLocation
 } from 'react-router-dom';
-import toast, { Toaster } from 'react-hot-toast';
+
+import toast, {
+  Toaster
+} from 'react-hot-toast';
 
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
@@ -13,10 +21,17 @@ import AdminPanel from './components/AdminPanel';
 import Login from './components/Login';
 import Register from './components/Register';
 import MyOrders from './components/MyOrders';
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 
-const getRemainingStock = (product, cart) => {
+const getRemainingStock = (
+  product,
+  cart
+) => {
   const cartItem = cart.find(
-    (item) => Number(item.id) === Number(product.id)
+    (item) =>
+      Number(item.id) ===
+      Number(product.id)
   );
 
   const quantityInCart = cartItem
@@ -25,7 +40,8 @@ const getRemainingStock = (product, cart) => {
 
   return Math.max(
     0,
-    Number(product.stock) - quantityInCart
+    Number(product.stock) -
+      quantityInCart
   );
 };
 
@@ -43,10 +59,11 @@ const ProductGrid = ({
     }}
   >
     {products.map((item, index) => {
-      const remainingStock = getRemainingStock(
-        item,
-        cart
-      );
+      const remainingStock =
+        getRemainingStock(
+          item,
+          cart
+        );
 
       return (
         <div
@@ -83,7 +100,8 @@ const ProductGrid = ({
 
             <p
               style={{
-                color: 'var(--text-muted)',
+                color:
+                  'var(--text-muted)',
                 fontSize: '0.95rem',
                 textAlign: 'center'
               }}
@@ -96,7 +114,8 @@ const ProductGrid = ({
                 fontWeight: '600',
                 fontSize: '1.25rem',
                 textAlign: 'center',
-                color: 'var(--text-main)'
+                color:
+                  'var(--text-main)'
               }}
             >
               ₪{item.price}
@@ -108,10 +127,12 @@ const ProductGrid = ({
                 minHeight: '20px',
                 margin: '0 0 15px',
                 fontSize: '0.9rem',
+
                 fontWeight:
                   remainingStock <= 5
                     ? 'bold'
                     : 'normal',
+
                 color:
                   remainingStock <= 0
                     ? '#e74c3c'
@@ -130,20 +151,27 @@ const ProductGrid = ({
             </p>
 
             <button
+              type="button"
               className="btn-primary add-to-cart-btn"
               style={{
                 width: '100%',
+
                 opacity:
                   Number(item.stock) <= 0
                     ? 0.5
                     : 1,
+
                 cursor:
                   Number(item.stock) <= 0
                     ? 'not-allowed'
                     : 'pointer'
               }}
-              onClick={() => onAddToCart(item)}
-              disabled={Number(item.stock) <= 0}
+              onClick={() =>
+                onAddToCart(item)
+              }
+              disabled={
+                Number(item.stock) <= 0
+              }
             >
               {Number(item.stock) <= 0
                 ? 'Out of Stock'
@@ -157,48 +185,67 @@ const ProductGrid = ({
 );
 
 function App() {
-  const [items, setItems] = useState([]);
+  const location = useLocation();
 
-  const [cart, setCart] = useState(() => {
-    const savedCart = localStorage.getItem(
-      'baking_corner_cart'
-    );
+  const [items, setItems] =
+    useState([]);
 
-    return savedCart
-      ? JSON.parse(savedCart)
-      : [];
-  });
-
-  const [currentUser, setCurrentUser] =
+  const [cart, setCart] =
     useState(() => {
-      const savedUser = localStorage.getItem(
+      const savedCart =
+        localStorage.getItem(
+          'baking_corner_cart'
+        );
+
+      if (!savedCart) {
+        return [];
+      }
+
+      try {
+        return JSON.parse(savedCart);
+      } catch (error) {
+        console.error(
+          'Invalid saved cart:',
+          error
+        );
+
+        return [];
+      }
+    });
+
+  const [
+    currentUser,
+    setCurrentUser
+  ] = useState(() => {
+    const savedUser =
+      localStorage.getItem(
         'baking_corner_user'
       );
 
-      return savedUser
-        ? JSON.parse(savedUser)
-        : null;
-    });
+    if (!savedUser) {
+      return null;
+    }
 
-  useEffect(() => {
-    localStorage.setItem(
-      'baking_corner_cart',
-      JSON.stringify(cart)
-    );
-  }, [cart]);
-useEffect(() => {
-  const productPages = [
-    '/',
-    '/ingredients',
-    '/equipment'
-  ];
+    try {
+      return JSON.parse(savedUser);
+    } catch (error) {
+      console.error(
+        'Invalid saved user:',
+        error
+      );
 
-  if (
-    productPages.includes(location.pathname)
-  ) {
-    loadProducts();
-  }
-}, [location.pathname]);
+      localStorage.removeItem(
+        'baking_corner_user'
+      );
+
+      localStorage.removeItem(
+        'baking_corner_token'
+      );
+
+      return null;
+    }
+  });
+
   const loadProducts = async () => {
     try {
       const response = await fetch(
@@ -206,10 +253,14 @@ useEffect(() => {
       );
 
       if (!response.ok) {
-        throw new Error('Failed to load products');
+        throw new Error(
+          'Failed to load products'
+        );
       }
 
-      const data = await response.json();
+      const data =
+        await response.json();
+
       setItems(data);
     } catch (error) {
       console.error(
@@ -217,17 +268,42 @@ useEffect(() => {
         error
       );
 
-      toast.error('Failed to load products', {
-        id: 'load-products-error'
-      });
+      toast.error(
+        'Failed to load products',
+        {
+          id:
+            'load-products-error'
+        }
+      );
     }
   };
 
   useEffect(() => {
-    loadProducts();
-  }, []);
+    localStorage.setItem(
+      'baking_corner_cart',
+      JSON.stringify(cart)
+    );
+  }, [cart]);
 
-  const addToCart = async (product) => {
+  useEffect(() => {
+    const productPages = [
+      '/',
+      '/ingredients',
+      '/equipment'
+    ];
+
+    if (
+      productPages.includes(
+        location.pathname
+      )
+    ) {
+      loadProducts();
+    }
+  }, [location.pathname]);
+
+  const addToCart = async (
+    product
+  ) => {
     try {
       const response = await fetch(
         'http://localhost:5000/api/products'
@@ -245,26 +321,31 @@ useEffect(() => {
       const latestProduct =
         latestProducts.find(
           (item) =>
-            Number(item.id) === Number(product.id)
+            Number(item.id) ===
+            Number(product.id)
         );
 
       if (!latestProduct) {
-        toast.error('Product was not found', {
-          id: `product-not-found-${product.id}`
-        });
+        toast.error(
+          'Product was not found',
+          {
+            id:
+              `product-not-found-${product.id}`
+          }
+        );
 
         return;
       }
 
-      const availableStock = Number(
-        latestProduct.stock
-      );
+      const availableStock =
+        Number(latestProduct.stock);
 
       if (availableStock <= 0) {
         toast.error(
           `"${latestProduct.name}" is out of stock`,
           {
-            id: `out-of-stock-${latestProduct.id}`
+            id:
+              `out-of-stock-${latestProduct.id}`
           }
         );
 
@@ -282,12 +363,16 @@ useEffect(() => {
               Number(latestProduct.id)
           );
 
-        const currentQuantity = existingItem
-          ? Number(existingItem.quantity)
-          : 0;
+        const currentQuantity =
+          existingItem
+            ? Number(
+                existingItem.quantity
+              )
+            : 0;
 
         if (
-          currentQuantity >= availableStock
+          currentQuantity >=
+          availableStock
         ) {
           const unitText =
             availableStock === 1
@@ -302,7 +387,8 @@ useEffect(() => {
           toast.error(
             `Only ${availableStock} ${unitText} of "${latestProduct.name}" ${verb} available`,
             {
-              id: `stock-limit-${latestProduct.id}`
+              id:
+                `stock-limit-${latestProduct.id}`
             }
           );
 
@@ -312,21 +398,27 @@ useEffect(() => {
         toast.success(
           `"${latestProduct.name}" added to cart`,
           {
-            id: `add-product-${latestProduct.id}`
+            id:
+              `add-product-${latestProduct.id}`
           }
         );
 
         if (existingItem) {
-          return previousCart.map((item) =>
-            Number(item.id) ===
-            Number(latestProduct.id)
-              ? {
-                  ...item,
-                  stock: availableStock,
-                  quantity:
-                    currentQuantity + 1
-                }
-              : item
+          return previousCart.map(
+            (item) =>
+              Number(item.id) ===
+              Number(
+                latestProduct.id
+              )
+                ? {
+                    ...item,
+                    stock:
+                      availableStock,
+                    quantity:
+                      currentQuantity +
+                      1
+                  }
+                : item
           );
         }
 
@@ -348,13 +440,16 @@ useEffect(() => {
       toast.error(
         'Could not check the current inventory',
         {
-          id: 'inventory-check-error'
+          id:
+            'inventory-check-error'
         }
       );
     }
   };
 
-  const decreaseQuantity = (product) => {
+  const decreaseQuantity = (
+    product
+  ) => {
     setCart((previousCart) => {
       const existingItem =
         previousCart.find(
@@ -368,7 +463,9 @@ useEffect(() => {
       }
 
       if (
-        Number(existingItem.quantity) === 1
+        Number(
+          existingItem.quantity
+        ) === 1
       ) {
         return previousCart.filter(
           (item) =>
@@ -377,20 +474,25 @@ useEffect(() => {
         );
       }
 
-      return previousCart.map((item) =>
-        Number(item.id) ===
-        Number(product.id)
-          ? {
-              ...item,
-              quantity:
-                Number(item.quantity) - 1
-            }
-          : item
+      return previousCart.map(
+        (item) =>
+          Number(item.id) ===
+          Number(product.id)
+            ? {
+                ...item,
+                quantity:
+                  Number(
+                    item.quantity
+                  ) - 1
+              }
+            : item
       );
     });
   };
 
-  const removeFromCart = (productId) => {
+  const removeFromCart = (
+    productId
+  ) => {
     setCart((previousCart) =>
       previousCart.filter(
         (item) =>
@@ -433,11 +535,13 @@ useEffect(() => {
     );
   };
 
-  const totalItemsInCart = cart.reduce(
-    (sum, item) =>
-      sum + Number(item.quantity),
-    0
-  );
+  const totalItemsInCart =
+    cart.reduce(
+      (sum, item) =>
+        sum +
+        Number(item.quantity),
+      0
+    );
 
   return (
     <div
@@ -484,8 +588,9 @@ useEffect(() => {
                 position: 'absolute',
                 top: '-8px',
                 right: '-12px',
-                backgroundColor: '#e74c3c',
-                color: '#fff',
+                backgroundColor:
+                  '#e74c3c',
+                color: '#ffffff',
                 borderRadius: '50%',
                 padding: '2px 7px',
                 fontSize: '1rem',
@@ -542,7 +647,8 @@ useEffect(() => {
           Equipment
         </Link>
 
-        {currentUser?.role === 'admin' && (
+        {currentUser?.role ===
+          'admin' && (
           <Link
             to="/admin"
             style={{
@@ -556,19 +662,24 @@ useEffect(() => {
 
         {currentUser ? (
           <>
-          <Link
-             to="/my-orders"
-             style={navigationLinkStyle}
-          >
-           My Orders
-          </Link>
+            <Link
+              to="/my-orders"
+              style={
+                navigationLinkStyle
+              }
+            >
+              My Orders
+            </Link>
+
             <span
               style={{
-                color: 'var(--text-muted)',
+                color:
+                  'var(--text-muted)',
                 fontSize: '0.95rem'
               }}
             >
-              Hello, {currentUser.firstName}
+              Hello,{' '}
+              {currentUser.firstName}
             </span>
 
             <button
@@ -590,14 +701,18 @@ useEffect(() => {
           <>
             <Link
               to="/login"
-              style={navigationLinkStyle}
+              style={
+                navigationLinkStyle
+              }
             >
               Login
             </Link>
 
             <Link
               to="/register"
-              style={navigationLinkStyle}
+              style={
+                navigationLinkStyle
+              }
             >
               Register
             </Link>
@@ -611,7 +726,9 @@ useEffect(() => {
           element={
             <ProductGrid
               products={items}
-              onAddToCart={addToCart}
+              onAddToCart={
+                addToCart
+              }
               cart={cart}
             />
           }
@@ -626,7 +743,9 @@ useEffect(() => {
                   item.category ===
                   'ingredients'
               )}
-              onAddToCart={addToCart}
+              onAddToCart={
+                addToCart
+              }
               cart={cart}
             />
           }
@@ -641,7 +760,9 @@ useEffect(() => {
                   item.category ===
                   'equipment'
               )}
-              onAddToCart={addToCart}
+              onAddToCart={
+                addToCart
+              }
               cart={cart}
             />
           }
@@ -650,43 +771,66 @@ useEffect(() => {
         <Route
           path="/login"
           element={
-            currentUser
-              ? <Navigate to="/" />
-              : (
-                <Login
-                  onLogin={handleLogin}
-                />
-              )
+            currentUser ? (
+              <Navigate
+                to="/"
+                replace
+              />
+            ) : (
+              <Login
+                onLogin={
+                  handleLogin
+                }
+              />
+            )
           }
         />
 
         <Route
           path="/register"
           element={
-            currentUser
-              ? <Navigate to="/" />
-              : <Register />
+            currentUser ? (
+              <Navigate
+                to="/"
+                replace
+              />
+            ) : (
+              <Register />
+            )
           }
         />
+
         <Route
-           path="/my-orders"
-           element={
-           currentUser
-            ?<MyOrders
-  onProductsChanged={loadProducts}
-/>
-            : <Navigate to="/login" />
-        }
-      />
+          path="/my-orders"
+          element={
+            <ProtectedRoute
+              currentUser={
+                currentUser
+              }
+            >
+              <MyOrders
+                onProductsChanged={
+                  loadProducts
+                }
+              />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/admin"
           element={
-            currentUser?.role === 'admin'
-              ? <AdminPanel
-  onProductsChanged={loadProducts}
-/>
-              : <Navigate to="/login" />
+            <AdminRoute
+              currentUser={
+                currentUser
+              }
+            >
+              <AdminPanel
+                onProductsChanged={
+                  loadProducts
+                }
+              />
+            </AdminRoute>
           }
         />
 
@@ -696,8 +840,12 @@ useEffect(() => {
             <Cart
               cart={cart}
               onIncrease={addToCart}
-              onDecrease={decreaseQuantity}
-              onRemove={removeFromCart}
+              onDecrease={
+                decreaseQuantity
+              }
+              onRemove={
+                removeFromCart
+              }
             />
           }
         />
@@ -705,15 +853,31 @@ useEffect(() => {
         <Route
           path="/checkout"
           element={
-            currentUser ? (
+            <ProtectedRoute
+              currentUser={
+                currentUser
+              }
+            >
               <Checkout
                 cart={cart}
-                currentUser={currentUser}
-                onOrderComplete={clearCart}
+                currentUser={
+                  currentUser
+                }
+                onOrderComplete={
+                  clearCart
+                }
               />
-            ) : (
-              <Navigate to="/login" />
-            )
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to="/"
+              replace
+            />
           }
         />
       </Routes>

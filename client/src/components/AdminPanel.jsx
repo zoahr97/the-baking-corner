@@ -1,7 +1,4 @@
-import {
-  useEffect,
-  useState
-} from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 const emptyProductForm = {
@@ -14,60 +11,39 @@ const emptyProductForm = {
 };
 
 const getToken = () =>
-  localStorage.getItem(
-    'baking_corner_token'
-  );
+  localStorage.getItem('baking_corner_token');
 
-const getAuthHeaders = (
-  includeContentType = false
-) => {
+const getAuthHeaders = (includeContentType = false) => {
   const headers = {
     Authorization: `Bearer ${getToken()}`
   };
 
   if (includeContentType) {
-    headers['Content-Type'] =
-      'application/json';
+    headers['Content-Type'] = 'application/json';
   }
 
   return headers;
 };
 
-export default function AdminPanel({
-  onProductsChanged
-}) {
-  const [activeTab, setActiveTab] =
-    useState('orders');
+export default function AdminPanel({ onProductsChanged }) {
+  const [activeTab, setActiveTab] = useState('orders');
 
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
-  const [products, setProducts] =
-    useState([]);
+  const [products, setProducts] = useState([]);
 
-  const [form, setForm] =
-    useState(emptyProductForm);
+  const [form, setForm] = useState(emptyProductForm);
+  const [editingProductId, setEditingProductId] =
+    useState(null);
 
-  const [
-    editingProductId,
-    setEditingProductId
-  ] = useState(null);
+  const [selectedOrder, setSelectedOrder] =
+    useState(null);
+  const [orderItems, setOrderItems] = useState([]);
 
-  const [
-    selectedOrder,
-    setSelectedOrder
-  ] = useState(null);
-
-  const [orderItems, setOrderItems] =
-    useState([]);
-const [
-  selectedImage,
-  setSelectedImage
-] = useState(null);
-
-const [
-  isUploadingImage,
-  setIsUploadingImage
-] = useState(false);
+  const [selectedImage, setSelectedImage] =
+    useState(null);
+  const [isUploadingImage, setIsUploadingImage] =
+    useState(false);
 
   const fetchData = async () => {
     try {
@@ -76,23 +52,15 @@ const [
         usersResponse,
         productsResponse
       ] = await Promise.all([
-        fetch(
-          'http://localhost:5000/api/orders',
-          {
-            headers: getAuthHeaders()
-          }
-        ),
+        fetch('http://localhost:5000/api/orders', {
+          headers: getAuthHeaders()
+        }),
 
-        fetch(
-          'http://localhost:5000/api/users',
-          {
-            headers: getAuthHeaders()
-          }
-        ),
+        fetch('http://localhost:5000/api/users', {
+          headers: getAuthHeaders()
+        }),
 
-        fetch(
-          'http://localhost:5000/api/products'
-        )
+        fetch('http://localhost:5000/api/products')
       ]);
 
       if (
@@ -114,21 +82,15 @@ const [
       }
 
       if (!ordersResponse.ok) {
-        throw new Error(
-          'Failed to load orders'
-        );
+        throw new Error('Failed to load orders');
       }
 
       if (!usersResponse.ok) {
-        throw new Error(
-          'Failed to load users'
-        );
+        throw new Error('Failed to load users');
       }
 
       if (!productsResponse.ok) {
-        throw new Error(
-          'Failed to load products'
-        );
+        throw new Error('Failed to load products');
       }
 
       const [
@@ -160,9 +122,7 @@ const [
     fetchData();
   }, []);
 
-  const handleAddProduct = async (
-    event
-  ) => {
+  const handleAddProduct = async (event) => {
     event.preventDefault();
 
     try {
@@ -179,10 +139,15 @@ const [
 
       if (!response.ok) {
         throw new Error(
-          data.error ||
-          'Failed to add product'
+          data.error || 'Failed to add product'
         );
       }
+
+      setForm(emptyProductForm);
+      setSelectedImage(null);
+
+      await fetchData();
+      await onProductsChanged?.();
 
       toast.success(
         'Product added successfully!',
@@ -190,10 +155,6 @@ const [
           id: 'product-added'
         }
       );
-
-      setForm(emptyProductForm);
-      await fetchData();
-      await onProductsChanged?.();
     } catch (error) {
       console.error(
         'Error adding product:',
@@ -206,9 +167,7 @@ const [
     }
   };
 
-  const handleDeleteProduct = async (
-    productId
-  ) => {
+  const handleDeleteProduct = async (productId) => {
     const confirmed = window.confirm(
       'Are you sure you want to delete this product?'
     );
@@ -230,19 +189,19 @@ const [
 
       if (!response.ok) {
         throw new Error(
-          data.error ||
-          'Failed to delete product'
+          data.error || 'Failed to delete product'
         );
       }
 
       setProducts((previousProducts) =>
         previousProducts.filter(
           (product) =>
-            Number(product.id) !==
-            Number(productId)
+            Number(product.id) !== Number(productId)
         )
       );
+
       await onProductsChanged?.();
+
       toast.success(
         'Product deleted successfully!',
         {
@@ -279,15 +238,13 @@ const [
 
       if (!response.ok) {
         throw new Error(
-          data.error ||
-          'Failed to update product'
+          data.error || 'Failed to update product'
         );
       }
 
       setProducts((previousProducts) =>
         previousProducts.map((product) =>
-          Number(product.id) ===
-          Number(productId)
+          Number(product.id) === Number(productId)
             ? {
                 ...product,
                 ...updatedData
@@ -298,7 +255,10 @@ const [
 
       setForm(emptyProductForm);
       setEditingProductId(null);
-      await onProductsChanged?.(); 
+      setSelectedImage(null);
+
+      await onProductsChanged?.();
+
       toast.success(
         'Product updated successfully!',
         {
@@ -322,13 +282,14 @@ const [
 
     setForm({
       name: product.name,
+      description: product.description || '',
       price: product.price,
-      stock: product.stock,
       category: product.category,
       image_url: product.image_url || '',
-      description:
-        product.description || ''
+      stock: product.stock
     });
+
+    setSelectedImage(null);
 
     window.scrollTo({
       top: 0,
@@ -336,9 +297,7 @@ const [
     });
   };
 
-  const handleViewOrder = async (
-    order
-  ) => {
+  const handleViewOrder = async (order) => {
     try {
       const response = await fetch(
         `http://localhost:5000/api/orders/${order.id}/items`,
@@ -352,7 +311,7 @@ const [
       if (!response.ok) {
         throw new Error(
           data.error ||
-          'Failed to fetch order items'
+            'Failed to fetch order items'
         );
       }
 
@@ -397,15 +356,13 @@ const [
 
       if (!response.ok) {
         throw new Error(
-          data.error ||
-          'Failed to update status'
+          data.error || 'Failed to update status'
         );
       }
 
       setOrders((previousOrders) =>
         previousOrders.map((order) =>
-          Number(order.id) ===
-          Number(orderId)
+          Number(order.id) === Number(orderId)
             ? {
                 ...order,
                 status: newStatus
@@ -414,21 +371,19 @@ const [
         )
       );
 
-      setSelectedOrder(
-        (previousOrder) =>
-          Number(previousOrder?.id) ===
-          Number(orderId)
-            ? {
-                ...previousOrder,
-                status: newStatus
-              }
-            : previousOrder
+      setSelectedOrder((previousOrder) =>
+        Number(previousOrder?.id) ===
+        Number(orderId)
+          ? {
+              ...previousOrder,
+              status: newStatus
+            }
+          : previousOrder
       );
 
-      const productsResponse =
-        await fetch(
-          'http://localhost:5000/api/products'
-        );
+      const productsResponse = await fetch(
+        'http://localhost:5000/api/products'
+      );
 
       if (productsResponse.ok) {
         const updatedProducts =
@@ -436,13 +391,12 @@ const [
 
         setProducts(updatedProducts);
       }
+
       await onProductsChanged?.();
-      toast.success(
-        'Order status updated',
-        {
-          id: `status-updated-${orderId}`
-        }
-      );
+
+      toast.success('Order status updated', {
+        id: `status-updated-${orderId}`
+      });
     } catch (error) {
       console.error(
         'Error updating order status:',
@@ -454,80 +408,83 @@ const [
       });
     }
   };
-  
-const handleImageUpload = async () => {
-  if (!selectedImage) {
-    toast.error('Please select an image');
-    return;
-  }
 
-  const token = localStorage.getItem(
-    'baking_corner_token'
-  );
+  const handleImageUpload = async () => {
+    if (!selectedImage) {
+      toast.error('Please select an image', {
+        id: 'select-image-error'
+      });
 
-  const uploadData = new FormData();
-
-  uploadData.append(
-    'image',
-    selectedImage
-  );
-
-  setIsUploadingImage(true);
-
-  try {
-    const response = await fetch(
-      'http://localhost:5000/api/uploads/product-image',
-      {
-        method: 'POST',
-        headers: {
-          Authorization:
-            `Bearer ${token}`
-        },
-        body: uploadData
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-        'Failed to upload image'
-      );
+      return;
     }
 
-    setForm((previousForm) => ({
-      ...previousForm,
-      image_url: data.imageUrl
-    }));
+    const uploadData = new FormData();
 
-    setSelectedImage(null);
+    uploadData.append('image', selectedImage);
 
-    toast.success(
-      'Image uploaded successfully'
-    );
-  } catch (error) {
-    console.error(
-      'Image upload error:',
-      error
-    );
+    setIsUploadingImage(true);
 
-    toast.error(error.message);
-  } finally {
-    setIsUploadingImage(false);
-  }
-};
+    try {
+      const response = await fetch(
+        'http://localhost:5000/api/uploads/product-image',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getToken()}`
+          },
+          body: uploadData
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || 'Failed to upload image'
+        );
+      }
+
+      setForm((previousForm) => ({
+        ...previousForm,
+        image_url: data.imageUrl
+      }));
+
+      setSelectedImage(null);
+
+      toast.success(
+        'Image uploaded successfully',
+        {
+          id: 'image-uploaded'
+        }
+      );
+    } catch (error) {
+      console.error(
+        'Image upload error:',
+        error
+      );
+
+      toast.error(error.message, {
+        id: 'image-upload-error'
+      });
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   return (
     <div
       style={{
         maxWidth: '1000px',
+        width: '100%',
         margin: '0 auto',
-        padding: '20px'
+        padding: '20px',
+        boxSizing: 'border-box'
       }}
     >
       <h2>Admin Control Panel 🛡️</h2>
 
       <div
+        className="admin-tabs"
         style={{
           display: 'flex',
           flexWrap: 'wrap',
@@ -538,34 +495,25 @@ const handleImageUpload = async () => {
         }}
       >
         <button
-          onClick={() =>
-            setActiveTab('orders')
-          }
-          style={tabStyle(
-            activeTab === 'orders'
-          )}
+          type="button"
+          onClick={() => setActiveTab('orders')}
+          style={tabStyle(activeTab === 'orders')}
         >
           📦 Orders
         </button>
 
         <button
-          onClick={() =>
-            setActiveTab('users')
-          }
-          style={tabStyle(
-            activeTab === 'users'
-          )}
+          type="button"
+          onClick={() => setActiveTab('users')}
+          style={tabStyle(activeTab === 'users')}
         >
           👥 Users
         </button>
 
         <button
-          onClick={() =>
-            setActiveTab('products')
-          }
-          style={tabStyle(
-            activeTab === 'products'
-          )}
+          type="button"
+          onClick={() => setActiveTab('products')}
+          style={tabStyle(activeTab === 'products')}
         >
           🧁 Products & Inventory
         </button>
@@ -583,11 +531,7 @@ const handleImageUpload = async () => {
             <div style={tableWrapperStyle}>
               <table style={tableStyle}>
                 <thead>
-                  <tr
-                    style={{
-                      background: '#f4f4f4'
-                    }}
-                  >
+                  <tr style={tableHeaderRowStyle}>
                     <th style={thStyle}>
                       Order ID
                     </th>
@@ -618,10 +562,7 @@ const handleImageUpload = async () => {
                   {orders.map((order) => (
                     <tr
                       key={order.id}
-                      style={{
-                        borderBottom:
-                          '1px solid #ddd'
-                      }}
+                      style={tableRowStyle}
                     >
                       <td style={tdStyle}>
                         {order.id}
@@ -642,8 +583,7 @@ const handleImageUpload = async () => {
                       <td style={tdStyle}>
                         <select
                           value={
-                            order.status ||
-                            'pending'
+                            order.status || 'pending'
                           }
                           onChange={(event) =>
                             handleStatusChange(
@@ -683,10 +623,9 @@ const handleImageUpload = async () => {
 
                       <td style={tdStyle}>
                         <button
+                          type="button"
                           onClick={() =>
-                            handleViewOrder(
-                              order
-                            )
+                            handleViewOrder(order)
                           }
                           style={viewButtonStyle}
                         >
@@ -701,54 +640,26 @@ const handleImageUpload = async () => {
           )}
 
           {selectedOrder && (
-            <div
-              style={{
-                marginTop: '30px',
-                padding: '25px',
-                backgroundColor: '#fff',
-                border: '1px solid #ddd',
-                boxShadow:
-                  '0 4px 12px rgba(0,0,0,0.08)'
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent:
-                    'space-between',
-                  alignItems: 'center'
-                }}
-              >
+            <div style={orderDetailsStyle}>
+              <div style={orderTitleStyle}>
                 <h3>
                   Order #{selectedOrder.id}{' '}
                   Details
                 </h3>
 
                 <button
+                  type="button"
                   onClick={() => {
                     setSelectedOrder(null);
                     setOrderItems([]);
                   }}
-                  style={{
-                    border: 'none',
-                    background: 'none',
-                    fontSize: '1.4rem',
-                    cursor: 'pointer'
-                  }}
+                  style={closeButtonStyle}
                 >
                   ✕
                 </button>
               </div>
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns:
-                    'repeat(auto-fit, minmax(250px, 1fr))',
-                  gap: '10px 30px',
-                  marginBottom: '25px'
-                }}
-              >
+              <div style={customerDetailsStyle}>
                 <p>
                   <strong>Customer:</strong>{' '}
                   {selectedOrder.customer_name ||
@@ -795,19 +706,13 @@ const handleImageUpload = async () => {
 
               {orderItems.length === 0 ? (
                 <p>
-                  No products found for this
-                  order.
+                  No products found for this order.
                 </p>
               ) : (
                 <div style={tableWrapperStyle}>
                   <table style={tableStyle}>
                     <thead>
-                      <tr
-                        style={{
-                          background:
-                            '#f4f4f4'
-                        }}
-                      >
+                      <tr style={tableHeaderRowStyle}>
                         <th style={thStyle}>
                           Product
                         </th>
@@ -827,41 +732,34 @@ const handleImageUpload = async () => {
                     </thead>
 
                     <tbody>
-                      {orderItems.map(
-                        (item) => (
-                          <tr
-                            key={item.id}
-                            style={{
-                              borderBottom:
-                                '1px solid #ddd'
-                            }}
-                          >
-                            <td style={tdStyle}>
-                              {
-                                item.product_name
-                              }
-                            </td>
+                      {orderItems.map((item) => (
+                        <tr
+                          key={item.id}
+                          style={tableRowStyle}
+                        >
+                          <td style={tdStyle}>
+                            {item.product_name}
+                          </td>
 
-                            <td style={tdStyle}>
-                              {item.quantity}
-                            </td>
+                          <td style={tdStyle}>
+                            {item.quantity}
+                          </td>
 
-                            <td style={tdStyle}>
-                              ₪
-                              {Number(
-                                item.price_at_purchase
-                              ).toFixed(2)}
-                            </td>
+                          <td style={tdStyle}>
+                            ₪
+                            {Number(
+                              item.price_at_purchase
+                            ).toFixed(2)}
+                          </td>
 
-                            <td style={tdStyle}>
-                              ₪
-                              {Number(
-                                item.item_total
-                              ).toFixed(2)}
-                            </td>
-                          </tr>
-                        )
-                      )}
+                          <td style={tdStyle}>
+                            ₪
+                            {Number(
+                              item.item_total
+                            ).toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -883,21 +781,11 @@ const handleImageUpload = async () => {
             <div style={tableWrapperStyle}>
               <table style={tableStyle}>
                 <thead>
-                  <tr
-                    style={{
-                      background: '#f4f4f4'
-                    }}
-                  >
+                  <tr style={tableHeaderRowStyle}>
                     <th style={thStyle}>ID</th>
-                    <th style={thStyle}>
-                      Name
-                    </th>
-                    <th style={thStyle}>
-                      Email
-                    </th>
-                    <th style={thStyle}>
-                      Role
-                    </th>
+                    <th style={thStyle}>Name</th>
+                    <th style={thStyle}>Email</th>
+                    <th style={thStyle}>Role</th>
                   </tr>
                 </thead>
 
@@ -905,10 +793,7 @@ const handleImageUpload = async () => {
                   {users.map((user) => (
                     <tr
                       key={user.id}
-                      style={{
-                        borderBottom:
-                          '1px solid #ddd'
-                      }}
+                      style={tableRowStyle}
                     >
                       <td style={tdStyle}>
                         {user.id}
@@ -927,8 +812,7 @@ const handleImageUpload = async () => {
                         <strong
                           style={{
                             color:
-                              user.role ===
-                              'admin'
+                              user.role === 'admin'
                                 ? '#e74c3c'
                                 : '#27ae60'
                           }}
@@ -948,11 +832,11 @@ const handleImageUpload = async () => {
       {activeTab === 'products' && (
         <div>
           <h3>
-            Products Inventory (
-            {products.length})
+            Products Inventory ({products.length})
           </h3>
 
           <form
+            className="admin-product-form"
             onSubmit={(event) => {
               event.preventDefault();
 
@@ -972,12 +856,12 @@ const handleImageUpload = async () => {
               marginBottom: '25px',
               border: '1px solid #ddd',
               display: 'grid',
-              gridTemplateColumns:
-                '1fr 1fr',
+              gridTemplateColumns: '1fr 1fr',
               gap: '10px'
             }}
           >
             <h4
+              className="admin-form-full-width"
               style={{
                 gridColumn: 'span 2',
                 margin: '0 0 10px'
@@ -1038,8 +922,7 @@ const handleImageUpload = async () => {
               onChange={(event) =>
                 setForm({
                   ...form,
-                  category:
-                    event.target.value
+                  category: event.target.value
                 })
               }
               style={inputStyle}
@@ -1054,14 +937,14 @@ const handleImageUpload = async () => {
             </select>
 
             <input
+              className="admin-form-full-width"
               type="text"
               placeholder="Image URL"
               value={form.image_url}
               onChange={(event) =>
                 setForm({
                   ...form,
-                  image_url:
-                    event.target.value
+                  image_url: event.target.value
                 })
               }
               style={{
@@ -1069,40 +952,44 @@ const handleImageUpload = async () => {
                 gridColumn: 'span 2'
               }}
             />
-<div
-  style={{
-    gridColumn: 'span 2',
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '10px',
-    alignItems: 'center'
-  }}
->
-  <input
-    type="file"
-    accept="image/jpeg,image/png,image/webp"
-    onChange={(event) =>
-      setSelectedImage(
-        event.target.files[0] || null
-      )
-    }
-  />
 
-  <button
-    type="button"
-    onClick={handleImageUpload}
-    disabled={
-      !selectedImage ||
-      isUploadingImage
-    }
-    className="btn-primary"
-  >
-    {isUploadingImage
-      ? 'Uploading...'
-      : 'Upload Image'}
-  </button>
-</div>
+            <div
+              className="admin-form-full-width admin-image-upload"
+              style={{
+                gridColumn: 'span 2',
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '10px',
+                alignItems: 'center'
+              }}
+            >
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(event) =>
+                  setSelectedImage(
+                    event.target.files[0] || null
+                  )
+                }
+              />
+
+              <button
+                type="button"
+                onClick={handleImageUpload}
+                disabled={
+                  !selectedImage ||
+                  isUploadingImage
+                }
+                className="btn-primary"
+              >
+                {isUploadingImage
+                  ? 'Uploading...'
+                  : 'Upload Image'}
+              </button>
+            </div>
+
             <input
+              className="admin-form-full-width"
               type="text"
               placeholder="Description"
               value={form.description}
@@ -1120,6 +1007,7 @@ const handleImageUpload = async () => {
             />
 
             <div
+              className="admin-form-full-width admin-form-buttons"
               style={{
                 gridColumn: 'span 2',
                 display: 'flex',
@@ -1133,10 +1021,9 @@ const handleImageUpload = async () => {
                   flex: 1,
                   padding: '10px',
                   cursor: 'pointer',
-                  background:
-                    editingProductId
-                      ? '#f39c12'
-                      : ''
+                  background: editingProductId
+                    ? '#f39c12'
+                    : ''
                 }}
               >
                 {editingProductId
@@ -1150,16 +1037,9 @@ const handleImageUpload = async () => {
                   onClick={() => {
                     setEditingProductId(null);
                     setForm(emptyProductForm);
+                    setSelectedImage(null);
                   }}
-                  style={{
-                    flex: 1,
-                    padding: '10px',
-                    cursor: 'pointer',
-                    background: '#95a5a6',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px'
-                  }}
+                  style={cancelEditButtonStyle}
                 >
                   Cancel Edit
                 </button>
@@ -1167,27 +1047,20 @@ const handleImageUpload = async () => {
             </div>
           </form>
 
-          <div style={tableWrapperStyle}>
-            <table style={tableStyle}>
+         <div
+  className="products-table-wrapper"
+  style={tableWrapperStyle}
+>
+  <table style={tableStyle}>
               <thead>
-                <tr
-                  style={{
-                    background: '#f4f4f4'
-                  }}
-                >
+                <tr style={tableHeaderRowStyle}>
                   <th style={thStyle}>ID</th>
-                  <th style={thStyle}>
-                    Name
-                  </th>
+                  <th style={thStyle}>Name</th>
                   <th style={thStyle}>
                     Category
                   </th>
-                  <th style={thStyle}>
-                    Price
-                  </th>
-                  <th style={thStyle}>
-                    Stock
-                  </th>
+                  <th style={thStyle}>Price</th>
+                  <th style={thStyle}>Stock</th>
                   <th style={thStyle}>
                     Actions
                   </th>
@@ -1198,10 +1071,7 @@ const handleImageUpload = async () => {
                 {products.map((product) => (
                   <tr
                     key={product.id}
-                    style={{
-                      borderBottom:
-                        '1px solid #ddd'
-                    }}
+                    style={tableRowStyle}
                   >
                     <td style={tdStyle}>
                       {product.id}
@@ -1223,25 +1093,21 @@ const handleImageUpload = async () => {
                       <span
                         style={{
                           color:
-                            Number(
-                              product.stock
-                            ) < 5
+                            Number(product.stock) < 5
                               ? '#e74c3c'
                               : '#27ae60',
                           fontWeight: 'bold'
                         }}
                       >
-                        {product.stock ??
-                          'N/A'}
+                        {product.stock ?? 'N/A'}
                       </span>
                     </td>
 
                     <td style={tdStyle}>
                       <button
+                        type="button"
                         onClick={() =>
-                          handleEditClick(
-                            product
-                          )
+                          handleEditClick(product)
                         }
                         style={editButtonStyle}
                       >
@@ -1249,6 +1115,7 @@ const handleImageUpload = async () => {
                       </button>
 
                       <button
+                        type="button"
                         onClick={() =>
                           handleDeleteProduct(
                             product.id
@@ -1297,6 +1164,14 @@ const tableStyle = {
     '0 2px 4px rgba(0,0,0,0.05)'
 };
 
+const tableHeaderRowStyle = {
+  background: '#f4f4f4'
+};
+
+const tableRowStyle = {
+  borderBottom: '1px solid #ddd'
+};
+
 const thStyle = {
   padding: '12px',
   textAlign: 'left',
@@ -1309,9 +1184,11 @@ const tdStyle = {
 };
 
 const inputStyle = {
+  width: '100%',
   padding: '8px',
   borderRadius: '4px',
-  border: '1px solid #ccc'
+  border: '1px solid #ccc',
+  boxSizing: 'border-box'
 };
 
 const selectStyle = {
@@ -1338,7 +1215,8 @@ const editButtonStyle = {
   color: '#fff',
   border: 'none',
   borderRadius: '4px',
-  marginRight: '8px'
+  marginRight: '8px',
+  marginBottom: '4px'
 };
 
 const deleteButtonStyle = {
@@ -1348,4 +1226,44 @@ const deleteButtonStyle = {
   color: '#fff',
   border: 'none',
   borderRadius: '4px'
+};
+
+const cancelEditButtonStyle = {
+  flex: 1,
+  padding: '10px',
+  cursor: 'pointer',
+  background: '#95a5a6',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '4px'
+};
+
+const orderDetailsStyle = {
+  marginTop: '30px',
+  padding: '25px',
+  backgroundColor: '#fff',
+  border: '1px solid #ddd',
+  boxShadow:
+    '0 4px 12px rgba(0,0,0,0.08)'
+};
+
+const orderTitleStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center'
+};
+
+const closeButtonStyle = {
+  border: 'none',
+  background: 'none',
+  fontSize: '1.4rem',
+  cursor: 'pointer'
+};
+
+const customerDetailsStyle = {
+  display: 'grid',
+  gridTemplateColumns:
+    'repeat(auto-fit, minmax(250px, 1fr))',
+  gap: '10px 30px',
+  marginBottom: '25px'
 };

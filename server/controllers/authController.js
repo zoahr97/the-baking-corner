@@ -1,6 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const pool = require('../config/db');
+
+const userModel = require(
+  '../models/userModel'
+);
 
 // POST /api/auth/register
 const register = async (req, res) => {
@@ -11,7 +14,12 @@ const register = async (req, res) => {
     password
   } = req.body;
 
-  if (!firstName || !lastName || !email || !password) {
+  if (
+    !firstName ||
+    !lastName ||
+    !email ||
+    !password
+  ) {
     return res.status(400).json({
       error: 'All fields are required'
     });
@@ -19,7 +27,8 @@ const register = async (req, res) => {
 
   if (password.length < 6) {
     return res.status(400).json({
-      error: 'Password must contain at least 6 characters'
+      error:
+        'Password must contain at least 6 characters'
     });
   }
 
@@ -28,14 +37,15 @@ const register = async (req, res) => {
       .trim()
       .toLowerCase();
 
-    const [existingUsers] = await pool.query(
-      'SELECT id FROM users WHERE email = ?',
-      [normalizedEmail]
-    );
+    const existingUser =
+      await userModel.findUserByEmail(
+        normalizedEmail
+      );
 
-    if (existingUsers.length > 0) {
+    if (existingUser) {
       return res.status(409).json({
-        error: 'A user with this email already exists'
+        error:
+          'A user with this email already exists'
       });
     }
 
@@ -44,23 +54,20 @@ const register = async (req, res) => {
       10
     );
 
-    const [result] = await pool.query(
-      `INSERT INTO users
-        (first_name, last_name, email, password, role)
-       VALUES (?, ?, ?, ?, ?)`,
-      [
-        firstName.trim(),
-        lastName.trim(),
-        normalizedEmail,
-        passwordHash,
-        'customer'
-      ]
-    );
+    const userId = await userModel.createUser({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: normalizedEmail,
+      passwordHash,
+      role: 'customer'
+    });
 
-    res.status(201).json({
-      message: 'Registration completed successfully',
+    return res.status(201).json({
+      message:
+        'Registration completed successfully',
+
       user: {
-        id: result.insertId,
+        id: userId,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: normalizedEmail,
@@ -68,9 +75,12 @@ const register = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error(
+      'Registration error:',
+      error
+    );
 
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Registration failed'
     });
   }
@@ -82,7 +92,8 @@ const login = async (req, res) => {
 
   if (!email || !password) {
     return res.status(400).json({
-      error: 'Email and password are required'
+      error:
+        'Email and password are required'
     });
   }
 
@@ -91,35 +102,37 @@ const login = async (req, res) => {
       .trim()
       .toLowerCase();
 
-    const [users] = await pool.query(
-      `SELECT
-        id,
-        first_name,
-        last_name,
-        email,
-        password,
-        role
-       FROM users
-       WHERE email = ?`,
-      [normalizedEmail]
-    );
+    const user =
+      await userModel.findUserByEmail(
+        normalizedEmail
+      );
 
-    if (users.length === 0) {
+    if (!user) {
       return res.status(401).json({
         error: 'Invalid email or password'
       });
     }
 
-    const user = users[0];
-
-    const passwordIsValid = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const passwordIsValid =
+      await bcrypt.compare(
+        password,
+        user.password
+      );
 
     if (!passwordIsValid) {
       return res.status(401).json({
         error: 'Invalid email or password'
+      });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      console.error(
+        'JWT_SECRET is missing from .env'
+      );
+
+      return res.status(500).json({
+        error:
+          'Server authentication configuration error'
       });
     }
 
@@ -135,9 +148,10 @@ const login = async (req, res) => {
       }
     );
 
-    res.json({
+    return res.status(200).json({
       message: 'Login completed successfully',
       token,
+
       user: {
         id: user.id,
         firstName: user.first_name,
@@ -149,7 +163,7 @@ const login = async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
 
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Login failed'
     });
   }

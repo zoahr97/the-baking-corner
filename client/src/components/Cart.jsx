@@ -22,7 +22,7 @@ export default function Cart({ cart, onIncrease, onDecrease, onRemove }) {
       <h2>Your Shopping Cart</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
         {cart.map((item) => (
-          <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#fff' }}>
+          <div key={item.id}  className="cart-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#fff' }}>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <img src={item.image_url} alt={item.name} style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
@@ -33,7 +33,14 @@ export default function Cart({ cart, onIncrease, onDecrease, onRemove }) {
             </div>
 
             {/* Quantity management & removal */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+           <div
+                className="cart-actions"
+                style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+           }}
+          >
               <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #ccc', borderRadius: '4px' }}>
                 <button onClick={() => onDecrease(item)} style={{ padding: '4px 10px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}>-</button>
                 <span style={{ padding: '0 10px', fontWeight: 'bold' }}>{item.quantity}</span>
