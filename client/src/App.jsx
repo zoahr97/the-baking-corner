@@ -1,12 +1,8 @@
-import {
-  useEffect,
-  useState
-} from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   Routes,
   Route,
-  Link,
   Navigate,
   useLocation
 } from 'react-router-dom';
@@ -15,174 +11,19 @@ import toast, {
   Toaster
 } from 'react-hot-toast';
 
-import Cart from './components/Cart';
-import Checkout from './components/Checkout';
-import AdminPanel from './components/AdminPanel';
-import Login from './components/Login';
-import Register from './components/Register';
-import MyOrders from './components/MyOrders';
+// Components
+import Navbar from './components/Navbar';
+import ProductGrid from './components/ProductGrid';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 
-const getRemainingStock = (
-  product,
-  cart
-) => {
-  const cartItem = cart.find(
-    (item) =>
-      Number(item.id) ===
-      Number(product.id)
-  );
-
-  const quantityInCart = cartItem
-    ? Number(cartItem.quantity)
-    : 0;
-
-  return Math.max(
-    0,
-    Number(product.stock) -
-      quantityInCart
-  );
-};
-
-const ProductGrid = ({
-  products,
-  onAddToCart,
-  cart
-}) => (
-  <div
-    style={{
-      display: 'grid',
-      gridTemplateColumns:
-        'repeat(auto-fill, minmax(280px, 1fr))',
-      gap: '24px'
-    }}
-  >
-    {products.map((item, index) => {
-      const remainingStock =
-        getRemainingStock(
-          item,
-          cart
-        );
-
-      return (
-        <div
-          key={item.id || index}
-          className="product-card"
-        >
-          <div className="image-container">
-            <img
-              src={item.image_url}
-              alt={item.name}
-              className="product-image"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain'
-              }}
-              onError={(event) => {
-                event.target.src =
-                  'https://via.placeholder.com/200?text=No+Image';
-              }}
-            />
-          </div>
-
-          <div className="product-info">
-            <h3
-              className="product-title"
-              style={{
-                margin: '0 0 10px',
-                textAlign: 'center'
-              }}
-            >
-              {item.name}
-            </h3>
-
-            <p
-              style={{
-                color:
-                  'var(--text-muted)',
-                fontSize: '0.95rem',
-                textAlign: 'center'
-              }}
-            >
-              {item.description}
-            </p>
-
-            <p
-              style={{
-                fontWeight: '600',
-                fontSize: '1.25rem',
-                textAlign: 'center',
-                color:
-                  'var(--text-main)'
-              }}
-            >
-              ₪{item.price}
-            </p>
-
-            <p
-              style={{
-                textAlign: 'center',
-                minHeight: '20px',
-                margin: '0 0 15px',
-                fontSize: '0.9rem',
-
-                fontWeight:
-                  remainingStock <= 5
-                    ? 'bold'
-                    : 'normal',
-
-                color:
-                  remainingStock <= 0
-                    ? '#e74c3c'
-                    : remainingStock <= 5
-                      ? '#e67e22'
-                      : 'var(--text-muted)'
-              }}
-            >
-              {remainingStock <= 0
-                ? 'No more units available'
-                : remainingStock === 1
-                  ? 'Only 1 unit left'
-                  : remainingStock <= 5
-                    ? `Only ${remainingStock} units left`
-                    : `${remainingStock} units available`}
-            </p>
-
-            <button
-              type="button"
-              className="btn-primary add-to-cart-btn"
-              style={{
-                width: '100%',
-
-                opacity:
-                  Number(item.stock) <= 0
-                    ? 0.5
-                    : 1,
-
-                cursor:
-                  Number(item.stock) <= 0
-                    ? 'not-allowed'
-                    : 'pointer'
-              }}
-              onClick={() =>
-                onAddToCart(item)
-              }
-              disabled={
-                Number(item.stock) <= 0
-              }
-            >
-              {Number(item.stock) <= 0
-                ? 'Out of Stock'
-                : 'Add to Cart'}
-            </button>
-          </div>
-        </div>
-      );
-    })}
-  </div>
-);
+// Pages
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import AdminPanel from './pages/AdminPanel';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import MyOrders from './pages/MyOrders';
 
 function App() {
   const location = useLocation();
@@ -360,7 +201,9 @@ function App() {
           previousCart.find(
             (item) =>
               Number(item.id) ===
-              Number(latestProduct.id)
+              Number(
+                latestProduct.id
+              )
           );
 
         const currentQuantity =
@@ -556,169 +399,13 @@ function App() {
     >
       <Toaster />
 
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          position: 'relative',
-          marginBottom: '10px'
-        }}
-      >
-        <h1 style={{ margin: 0 }}>
-          Welcome to The Baking Corner
-        </h1>
-
-        <Link
-          to="/cart"
-          style={{
-            position: 'absolute',
-            right: 0,
-            fontSize: '1.8rem',
-            cursor: 'pointer',
-            textDecoration: 'none',
-            color: 'inherit'
-          }}
-        >
-          🛒
-
-          {totalItemsInCart > 0 && (
-            <span
-              style={{
-                position: 'absolute',
-                top: '-8px',
-                right: '-12px',
-                backgroundColor:
-                  '#e74c3c',
-                color: '#ffffff',
-                borderRadius: '50%',
-                padding: '2px 7px',
-                fontSize: '1rem',
-                fontWeight: 'bold',
-                minWidth: '22px',
-                textAlign: 'center',
-                boxShadow:
-                  '0 2px 5px rgba(0,0,0,0.2)'
-              }}
-            >
-              {totalItemsInCart}
-            </span>
-          )}
-        </Link>
-      </div>
-
-      <p
-        style={{
-          textAlign: 'center',
-          marginBottom: '20px'
-        }}
-      >
-        Our high-quality baking products:
-      </p>
-
-      <nav
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '30px',
-          marginBottom: '40px'
-        }}
-      >
-        <Link
-          to="/"
-          style={navigationLinkStyle}
-        >
-          All Products
-        </Link>
-
-        <Link
-          to="/ingredients"
-          style={navigationLinkStyle}
-        >
-          Ingredients
-        </Link>
-
-        <Link
-          to="/equipment"
-          style={navigationLinkStyle}
-        >
-          Equipment
-        </Link>
-
-        {currentUser?.role ===
-          'admin' && (
-          <Link
-            to="/admin"
-            style={{
-              ...navigationLinkStyle,
-              color: '#e74c3c'
-            }}
-          >
-            Admin Panel
-          </Link>
-        )}
-
-        {currentUser ? (
-          <>
-            <Link
-              to="/my-orders"
-              style={
-                navigationLinkStyle
-              }
-            >
-              My Orders
-            </Link>
-
-            <span
-              style={{
-                color:
-                  'var(--text-muted)',
-                fontSize: '0.95rem'
-              }}
-            >
-              Hello,{' '}
-              {currentUser.firstName}
-            </span>
-
-            <button
-              type="button"
-              onClick={handleLogout}
-              style={{
-                border: 'none',
-                background: 'none',
-                color: '#e74c3c',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                fontSize: '1rem'
-              }}
-            >
-              Logout
-            </button>
-          </>
-        ) : (
-          <>
-            <Link
-              to="/login"
-              style={
-                navigationLinkStyle
-              }
-            >
-              Login
-            </Link>
-
-            <Link
-              to="/register"
-              style={
-                navigationLinkStyle
-              }
-            >
-              Register
-            </Link>
-          </>
-        )}
-      </nav>
+      <Navbar
+        currentUser={currentUser}
+        totalItemsInCart={
+          totalItemsInCart
+        }
+        onLogout={handleLogout}
+      />
 
       <Routes>
         <Route
@@ -884,12 +571,5 @@ function App() {
     </div>
   );
 }
-
-const navigationLinkStyle = {
-  textDecoration: 'none',
-  color: 'var(--text-main)',
-  fontWeight: 'bold',
-  fontSize: '1.1rem'
-};
 
 export default App;

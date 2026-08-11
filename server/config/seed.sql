@@ -60,17 +60,17 @@ INSERT INTO products (name, description, price, category, stock, image_url) VALU
 -- 2. Insert Admins & Customers
 -- ==========================================
 INSERT INTO users (first_name, last_name, email, password, role) VALUES
-('Shira Rachel', 'Tal', 'shira@thebakingcorner.com', 'admin123', 'admin'),
-('Zohar', 'Timsut', 'Zohar@thebakingcorner.com', 'admin123', 'admin'),
-('Israel', 'Israeli', 'israel@gmail.com', 'cust123', 'customer'),
-('Noa', 'Cohen', 'noa.cohen@gmail.com', 'cust123', 'customer'),
-('Daniel', 'Levi', 'daniel.levi@gmail.com', 'cust123', 'customer'),
-('Maya', 'Mizrachi', 'maya.m@gmail.com', 'cust123', 'customer'),
-('Ori', 'Peretz', 'ori.p@gmail.com', 'cust123', 'customer'),
-('Tamar', 'Biton', 'tamar.b@gmail.com', 'cust123', 'customer'),
-('Yossi', 'Avraham', 'yossi.a@gmail.com', 'cust123', 'customer'),
-('Shira', 'Haddad', 'shira.h@gmail.com', 'cust123', 'customer'),
-('Omer', 'Dahan', 'omer.d@gmail.com', 'cust123', 'customer');
+('Shira Rachel', 'Tal', 'shira@thebakingcorner.com', '$2b$10$aAZma8vCGGsUgzkSwchmCOh42l67gKYT3tNwK5uLNFkR2xejk2ufW', 'admin'),
+('Zohar', 'Timsut', 'Zohar@thebakingcorner.com', '$2b$10$aAZma8vCGGsUgzkSwchmCOh42l67gKYT3tNwK5uLNFkR2xejk2ufW', 'admin'),
+('Israel', 'Israeli', 'israel@gmail.com', '$2b$10$yxSUdieRtkMQ.5TbRTZ0dOmNkszKVubRjHc4rNZJ5wiaQHmTaXRtC', 'customer'),
+('Noa', 'Cohen', 'noa.cohen@gmail.com', '$2b$10$yxSUdieRtkMQ.5TbRTZ0dOmNkszKVubRjHc4rNZJ5wiaQHmTaXRtC', 'customer'),
+('Daniel', 'Levi', 'daniel.levi@gmail.com', '$2b$10$yxSUdieRtkMQ.5TbRTZ0dOmNkszKVubRjHc4rNZJ5wiaQHmTaXRtC', 'customer'),
+('Maya', 'Mizrachi', 'maya.m@gmail.com', '$2b$10$yxSUdieRtkMQ.5TbRTZ0dOmNkszKVubRjHc4rNZJ5wiaQHmTaXRtC', 'customer'),
+('Ori', 'Peretz', 'ori.p@gmail.com', '$2b$10$yxSUdieRtkMQ.5TbRTZ0dOmNkszKVubRjHc4rNZJ5wiaQHmTaXRtC', 'customer'),
+('Tamar', 'Biton', 'tamar.b@gmail.com', '$2b$10$yxSUdieRtkMQ.5TbRTZ0dOmNkszKVubRjHc4rNZJ5wiaQHmTaXRtC', 'customer'),
+('Yossi', 'Avraham', 'yossi.a@gmail.com', '$2b$10$yxSUdieRtkMQ.5TbRTZ0dOmNkszKVubRjHc4rNZJ5wiaQHmTaXRtC', 'customer'),
+('Shira', 'Haddad', 'shira.h@gmail.com', '$2b$10$yxSUdieRtkMQ.5TbRTZ0dOmNkszKVubRjHc4rNZJ5wiaQHmTaXRtC', 'customer'),
+('Omer', 'Dahan', 'omer.d@gmail.com', '$2b$10$yxSUdieRtkMQ.5TbRTZ0dOmNkszKVubRjHc4rNZJ5wiaQHmTaXRtC', 'customer');
 
 -- ==========================================
 -- 3. Insert Sample Orders
