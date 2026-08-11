@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import logo from '../assets/logo.svg'; 
 
 export default function Navbar({ currentUser, totalItemsInCart, onLogout }) {
   const navigationLinkStyle = {
@@ -9,27 +10,61 @@ export default function Navbar({ currentUser, totalItemsInCart, onLogout }) {
   };
 
   return (
-    <>
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', marginBottom: '10px' }}>
-        <h1 style={{ margin: 0 }}>Welcome to The Baking Corner</h1>
+    <header style={{ marginBottom: '30px' }}>
+      
+      {/* אזור עליון: מחולק ל-3 חלקים שווים כדי למרכז את הכותרת */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: '20px' 
+      }}>
         
-        <Link to="/cart" style={{ position: 'absolute', right: 0, fontSize: '1.8rem', cursor: 'pointer', textDecoration: 'none', color: 'inherit' }}>
-          🛒
-          {totalItemsInCart > 0 && (
-            <span style={{
-              position: 'absolute', top: '-8px', right: '-12px', backgroundColor: '#e74c3c',
-              color: '#fff', borderRadius: '50%', padding: '2px 7px', fontSize: '1rem',
-              fontWeight: 'bold', minWidth: '22px', textAlign: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
-            }}>
-              {totalItemsInCart}
-            </span>
-          )}
-        </Link>
+        {/* צד שמאל: הלוגו */}
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
+          <Link to="/">
+            <img 
+              src={logo} 
+              alt="The Baking Corner Logo" 
+              style={{ height: '70px', cursor: 'pointer' }} 
+            />
+          </Link>
+        </div>
+
+        {/* מרכז: הכותרת שרצית להחזיר */}
+        <div style={{ flex: 2, textAlign: 'center' }}>
+          <h1 style={{ margin: 0, fontSize: '2rem', color: 'var(--text-main)' }}>
+            Welcome to The Baking Corner
+          </h1>
+        </div>
+        
+        {/* צד ימין: עגלת קניות */}
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <Link to="/cart" style={{ position: 'relative', fontSize: '1.8rem', cursor: 'pointer', textDecoration: 'none', color: 'inherit' }}>
+            🛒
+            {totalItemsInCart > 0 && (
+              <span style={{
+                position: 'absolute', top: '-8px', right: '-12px', backgroundColor: '#e74c3c',
+                color: '#fff', borderRadius: '50%', padding: '2px 7px', fontSize: '1rem',
+                fontWeight: 'bold', minWidth: '22px', textAlign: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+              }}>
+                {totalItemsInCart}
+              </span>
+            )}
+          </Link>
+        </div>
       </div>
 
-      <p style={{ textAlign: 'center', marginBottom: '20px' }}>Our high-quality baking products:</p>
-
-      <nav style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '30px', marginBottom: '40px' }}>
+      {/* אזור תחתון: תפריט הניווט המרכזי */}
+      <nav style={{ 
+        display: 'flex', 
+        flexWrap: 'wrap', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        gap: '30px',
+        paddingBottom: '20px',
+        borderBottom: '1px solid #eaeaea'
+      }}>
         <Link to="/" style={navigationLinkStyle}>All Products</Link>
         <Link to="/ingredients" style={navigationLinkStyle}>Ingredients</Link>
         <Link to="/equipment" style={navigationLinkStyle}>Equipment</Link>
@@ -55,6 +90,6 @@ export default function Navbar({ currentUser, totalItemsInCart, onLogout }) {
           </>
         )}
       </nav>
-    </>
+    </header>
   );
 }
